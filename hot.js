@@ -1,32 +1,95 @@
-const data = [
-    {sewa: '1/2 Hari', superior: '100000/Malam', deluxe: '150000/Malam', premium:'200000/Malam'},
-    {sewa: '3/4 Hari', superior: '90000/Malam', deluxe: '135000/Malam', premium:'180000/Malam'},
-    {sewa: '=>5 Hari', superior: '80000/Malam', deluxe: '120000/Malam', premium:'160000/Malam'}
-];
-
-console.table(data);
-
 const readline = require("readline");
+
+const menu = [
+  {
+    type: "Superior",
+    "1-2 hari": 100000,
+    "3-4 hari": 90000,
+    ">=5 hari": 80000,
+  },
+  {
+    type: "Deluxe",
+    "1-2 hari": 150000,
+    "3-4 hari": 135000,
+    ">=5 hari": 120000,
+  },
+  {
+    type: "Premium",
+    "1-2 hari": 200000,
+    "3-4 hari": 180000,
+    ">=5 hari": 160000,
+  },
+];
+const tipeKamarMapping = {
+  1: "Superior",
+  2: "Deluxe",
+  3: "Premium",
+};
+
+console.table(menu);
+
 const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+  input: process.stdin,
+  output: process.stdout,
 });
 
-rl.question("Tipe kamar: \n 1. superior\n 2. deluxe\n 3. premium\n Pilih tipe kamar: ",
-(jenisKamar) => {
-    rl.question("Masukkan lama menginap (dalam hari): ",(lamaMenginap) => {
-        let hargaPerMalam = 0;
-        if (jenisKamar ==="1"){
-            hargaPerMalam = lamaMenginap <= 2 ? 100000 : lamaMenginap <= 4 ? 90000 : 80000;
-        } else if (jenisKamar === "2") {
-            hargaPerMalam = lamaMenginap <= 2 ? 150000 : lamaMenginap <= 4 ? 135000 : 120000;
-        }else if (jenisKamar === "3") {
-            hargaPerMalam = lamaMenginap <= 2 ? 200000 : lamaMenginap <= 4 ? 180000 : 160000;
+let totalHarga = 0;
+
+function isTipeKamarValid(tipeKamar) {
+  return tipeKamar >= 1 && tipeKamar <= 3;
+}
+
+function getHargaMalam(tipeKamar, lamaMenginap) {
+  const hargaTipeKamar = menu[tipeKamar - 1];
+  const hargaMalam = hargaTipeKamar[
+    lamaMenginap <= 2
+      ? "1-2 hari"
+      : lamaMenginap >= 5
+      ? ">=5 hari"
+      : "3-4 hari"
+  ];
+  return hargaMalam;
+}
+
+function tanyaKamar() {
+  rl.question("Masukkan tipe kamar (input dalam bentuk angka) : ", (tipeKamar) => {
+    if (!isTipeKamarValid(tipeKamar)) {
+      console.log("Input tidak valid!");
+      console.log("--------------");
+      tanyaKamar();
+      return;
     }
 
-    const totalHarga = hargaPerMalam * lamaMenginap;
+    rl.question("Masukkan lama menginap (dalam hari) : ", (lamaMenginap) => {
+      const convert = tipeKamarMapping[tipeKamar];
+      const hargaMalam = getHargaMalam(tipeKamar, lamaMenginap);
+      const subTotalHarga = hargaMalam * lamaMenginap;
+      totalHarga += subTotalHarga;
 
-    console.log(`Harga kamar ${jenisKamar} selama ${lamaMenginap} hari adalah Rp.${totalHarga}`);
-    rl.close();
-});
-});
+      console.log(`Tipe Kamar: ${convert}`);
+      console.log(`Lama Menginap: ${lamaMenginap} hari`);
+      console.log(`Subtotal Harga: Rp ${subTotalHarga}`);
+
+      tanyaLanjut();
+    });
+  });
+}
+
+function tanyaLanjut() {
+  rl.question("Ingin melanjutkan transaksi? (y/n) ", (jawaban) => {
+    if (jawaban === "y") {
+      console.log("--------------");
+      tanyaKamar();
+    } else if (jawaban === "n") {
+      console.log("--------------");
+      console.log(`Total Harga: Rp ${totalHarga}`);
+      console.log("Terima kasih telah menggunakan layanan kami!");
+      rl.close();
+    } else {
+      console.log("Pilihan tidak valid!");
+      rl.close();
+    }
+  });
+}
+
+tanyaKamar()
